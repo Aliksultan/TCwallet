@@ -16,3 +16,15 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  ngrok:
+    image: ngrok/ngrok:alpine
+    restart: always
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    command:
+      - "http"
+      - "app:3000"
+      - "--domain=${NGROK_DOMAIN}"
+    depends_on:
+      - app
