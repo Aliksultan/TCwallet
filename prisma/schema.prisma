@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  telegram_id  String        @unique
+  username     String?
+  display_name String
+  role         String        @default("MEMBER")
+  language     String        @default("ru")
+  created_at   DateTime      @default(now())
+  transactions Transaction[] @relation("UserTransactions")
+  actions      Transaction[] @relation("ActorTransactions")
+  products     Product[]     @relation("CreatedProducts")
+  orders       Order[]       @relation("UserOrders")
+  templates    RewardTemplate[]
+}
+
+model Transaction {
+  id         String   @id @default(uuid())
+  user_id    String
+  actor_id   String?
+  amount     Int
+  type       String
+  activity   String?
+  reason     String?
+  created_at DateTime @default(now())
+
+  user  User  @relation("UserTransactions", fields: [user_id], references: [id])
+  actor User? @relation("ActorTransactions", fields: [actor_id], references: [id])
+  order Order?
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Int
+  image_url   String?
+  is_active   Boolean  @default(true)
+  created_by  String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  creator User    @relation("CreatedProducts", fields: [created_by], references: [id])
+  orders  Order[]
+}
+
+model Order {
+  id             String   @id @default(uuid())
+  user_id        String
+  product_id     String
+  transaction_id String   @unique
+  status         String   @default("PENDING")
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  user        User        @relation("UserOrders", fields: [user_id], references: [id])
+  product     Product     @relation(fields: [product_id], references: [id])
+  transaction Transaction @relation(fields: [transaction_id], references: [id])
+}
+
+model RewardTemplate {
+  id         String  @id @default(uuid())
+  name       String
+  name_kk    String?
+  amount     Int
+  activity   String?
+  type       String  @default("EARN")
+  created_by String
+
+  creator User @relation(fields: [created_by], references: [id])
+}
+
+
+
+
