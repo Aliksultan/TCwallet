@@ -17,7 +17,7 @@ docker run --rm \
   -w /app \
   -e DATABASE_URL="postgresql://tulga:tulga_secret@db:5432/tcwallet?schema=public" \
   node:22-alpine \
-  sh -c "apk add --no-cache openssl libc6-compat && npx --yes prisma@^5.22.0 migrate deploy"
+  sh -c "apk add --no-cache openssl libc6-compat && npx --yes prisma@^5.22.0 db push --accept-data-loss"
 # Optionally seed the database (uncomment if needed on fresh deploy)
 # echo "🌱 Seeding database..."
 # docker compose exec app npm run seed
