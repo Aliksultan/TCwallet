@@ -44,6 +44,7 @@ model Product {
   description String?
   price       Int
   image_url   String?
+  internal_link String?
   is_active   Boolean  @default(true)
   created_by  String
   created_at  DateTime @default(now())

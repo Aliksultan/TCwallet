@@ -17,6 +17,7 @@ interface Product {
   name: string
   price: number
   image_url: string | null
+  internal_link: string | null
   is_active: boolean
   description: string | null
 }
@@ -35,7 +36,7 @@ export function ManagerView({ isEmbedded }: { isEmbedded?: boolean }) {
   const [processing, setProcessing] = useState<string | null>(null)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
   const [showAddProduct, setShowAddProduct] = useState(false)
-  const [newProduct, setNewProduct] = useState({ name: '', price: '', description: '', image_url: '' })
+  const [newProduct, setNewProduct] = useState({ name: '', price: '', description: '', image_url: '', internal_link: '' })
   const [savingProduct, setSavingProduct] = useState(false)
 
   const showToast = (msg: string, type: 'success' | 'error') => {
@@ -92,7 +93,7 @@ export function ManagerView({ isEmbedded }: { isEmbedded?: boolean }) {
     if (res.ok) {
       showToast('Товар добавлен!', 'success')
       setShowAddProduct(false)
-      setNewProduct({ name: '', price: '', description: '', image_url: '' })
+      setNewProduct({ name: '', price: '', description: '', image_url: '', internal_link: '' })
       fetchData()
     } else {
       showToast(t('errors.generic'), 'error')
@@ -228,9 +229,14 @@ export function ManagerView({ isEmbedded }: { isEmbedded?: boolean }) {
                       ? <img src={p.image_url} alt="" style={{ width: 44, height: 44, borderRadius: 'var(--radius-sm)', objectFit: 'cover' }} />
                       : <div style={{ width: 44, height: 44, borderRadius: 'var(--radius-sm)', background: 'var(--glass-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Package size={20} /></div>
                     }
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>{p.name}</div>
                       <div className="coin-badge" style={{ fontSize: 13 }}>{p.price}</div>
+                      {p.internal_link && (
+                        <div style={{ fontSize: 11, color: 'var(--accent-primary)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          🔗 <a href={p.internal_link} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{p.internal_link}</a>
+                        </div>
+                      )}
                     </div>
                     <button
                       className={p.is_active ? 'btn-danger' : 'btn-success'}
@@ -259,6 +265,7 @@ export function ManagerView({ isEmbedded }: { isEmbedded?: boolean }) {
                   { key: 'price', label: t('manager.product_price'), placeholder: '100', type: 'number' },
                   { key: 'description', label: t('manager.product_description'), placeholder: 'Описание...' },
                   { key: 'image_url', label: t('manager.product_image'), placeholder: 'https://...' },
+                  { key: 'internal_link', label: 'Внутренняя ссылка (где купить/заказать)', placeholder: 'https://aliexpress.com/...' },
                 ].map((field) => (
                   <div key={field.key} style={{ marginBottom: 12 }}>
                     <label style={{ fontSize: 13, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>{field.label}</label>
