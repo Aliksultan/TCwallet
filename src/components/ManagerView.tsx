@@ -26,7 +26,7 @@ const STATUS_PILL: Record<string, string> = {
   DECLINED: 'pill-declined', COMPLETED: 'pill-completed'
 }
 
-export function ManagerView() {
+export function ManagerView({ isEmbedded }: { isEmbedded?: boolean }) {
   const { user, t } = useApp()
   const [tab, setTab] = useState<'orders' | 'products'>('orders')
   const [orders, setOrders] = useState<Order[]>([])
@@ -104,12 +104,16 @@ export function ManagerView() {
   const otherOrders = orders.filter((o) => o.status !== 'PENDING')
   const statusLabel: Record<string,string> = { PENDING: t('orders.status_pending'), ACCEPTED: t('orders.status_accepted'), DECLINED: t('orders.status_declined'), COMPLETED: t('orders.status_completed') }
 
-  return (
-    <div className="page">
+  const content = (
+    <>
       {toast && <div className={`toast toast-${toast.type}`}>{toast.type === 'success' ? '✅' : '❌'} {toast.msg}</div>}
 
-      <h1 className="page-title">{t('manager.title')}</h1>
-      <p className="page-subtitle" style={{ marginBottom: 16 }}>{t('common.app_name')}</p>
+      {!isEmbedded && (
+        <>
+          <h1 className="page-title">{t('manager.title')}</h1>
+          <p className="page-subtitle" style={{ marginBottom: 16 }}>{t('common.app_name')}</p>
+        </>
+      )}
 
       {/* Stats pills */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
@@ -275,6 +279,9 @@ export function ManagerView() {
           )}
         </>
       )}
-    </div>
+    </>
   )
+
+  if (isEmbedded) return content
+  return <div className="page">{content}</div>
 }

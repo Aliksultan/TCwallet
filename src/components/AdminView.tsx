@@ -3,6 +3,8 @@
 import { useApp } from '@/lib/app-context'
 import { useState, useEffect, useCallback } from 'react'
 import { Search, ChevronRight } from 'lucide-react'
+import { ManagerView } from './ManagerView'
+import { OrganiserView } from './OrganiserView'
 
 interface Analytics {
   totalUsers: number
@@ -20,7 +22,7 @@ const ROLES = ['MEMBER', 'ORGANISER', 'MANAGER', 'SUPER_ADMIN']
 
 export function AdminView() {
   const { user, t } = useApp()
-  const [tab, setTab] = useState<'dashboard' | 'users' | 'orders'>('dashboard')
+  const [tab, setTab] = useState<'dashboard' | 'users' | 'orders' | 'market' | 'issue'>('dashboard')
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
   const [users, setUsers] = useState<UserRow[]>([])
   const [search, setSearch] = useState('')
@@ -117,9 +119,15 @@ export function AdminView() {
       <p className="page-subtitle" style={{ marginBottom: 16 }}>{t('common.app_name')}</p>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
-        {[['dashboard','📊 Dashboard'],['users','👥 Пользователи'],['orders','📦 Заказы']].map(([key, label]) => (
-          <button key={key} className={`chip ${tab===key?'active':''}`} style={{ flex: 1, textAlign: 'center' }} onClick={() => setTab(key as typeof tab)}>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
+        {[
+          ['dashboard', '📊 Панель'],
+          ['users', '👥 Люди'],
+          ['market', '🛍️ Маркет'],
+          ['issue', '💸 Выдача'],
+          ['orders', '📦 Заказы']
+        ].map(([key, label]) => (
+          <button key={key} className={`chip ${tab===key?'active':''}`} style={{ flexShrink: 0 }} onClick={() => setTab(key as typeof tab)}>
             {label}
           </button>
         ))}
@@ -269,7 +277,7 @@ export function AdminView() {
             </div>
           )}
         </>
-      ) : (
+      ) : tab === 'orders' ? (
         /* ── All Orders ── */
         <div className="glass-card" style={{ overflow: 'hidden' }}>
           {orders.length === 0
@@ -289,7 +297,11 @@ export function AdminView() {
             ))
           }
         </div>
-      )}
+      ) : tab === 'market' ? (
+        <ManagerView isEmbedded />
+      ) : tab === 'issue' ? (
+        <OrganiserView isEmbedded />
+      ) : null}
     </div>
   )
 }

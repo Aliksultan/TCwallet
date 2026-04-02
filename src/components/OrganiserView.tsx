@@ -13,7 +13,7 @@ const ACTIVITIES = [
 interface Member { id: string; display_name: string; username: string | null; balance: number }
 interface Template { id: string; name: string; amount: number; activity: string | null }
 
-export function OrganiserView() {
+export function OrganiserView({ isEmbedded }: { isEmbedded?: boolean }) {
   const { user, t } = useApp()
   const [members, setMembers] = useState<Member[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
@@ -99,12 +99,16 @@ export function OrganiserView() {
     }
   }
 
-  return (
-    <div className="page">
+  const content = (
+    <>
       {toast && <div className={`toast toast-${toast.type}`}>{toast.type === 'success' ? '✅' : '❌'} {toast.msg}</div>}
 
-      <h1 className="page-title">{t('organiser.title')}</h1>
-      <p className="page-subtitle" style={{ marginBottom: 20 }}>{t('common.app_name')}</p>
+      {!isEmbedded && (
+        <>
+          <h1 className="page-title">{t('organiser.title')}</h1>
+          <p className="page-subtitle" style={{ marginBottom: 20 }}>{t('common.app_name')}</p>
+        </>
+      )}
 
       {/* Mode toggle */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
@@ -215,6 +219,9 @@ export function OrganiserView() {
           </button>
         </>
       )}
-    </div>
+    </>
   )
+
+  if (isEmbedded) return content
+  return <div className="page">{content}</div>
 }
