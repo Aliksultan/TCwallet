@@ -36,6 +36,7 @@ export function ManagerView({ isEmbedded }: { isEmbedded?: boolean }) {
   const [processing, setProcessing] = useState<string | null>(null)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
   const [showAddProduct, setShowAddProduct] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<string | null>(null)
   const [newProduct, setNewProduct] = useState({ name: '', price: '', description: '', image_url: '', internal_link: '' })
   const [savingProduct, setSavingProduct] = useState(false)
 
@@ -85,20 +86,36 @@ export function ManagerView({ isEmbedded }: { isEmbedded?: boolean }) {
   const handleAddProduct = async () => {
     if (!user || !newProduct.name || !newProduct.price) return
     setSavingProduct(true)
-    const res = await fetch('/api/products', {
-      method: 'POST',
+    const url = editingProduct ? `/api/products/${editingProduct}` : '/api/products'
+    const method = editingProduct ? 'PATCH' : 'POST'
+    
+    const res = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...newProduct, price: parseInt(newProduct.price), created_by: user.id }),
     })
     if (res.ok) {
-      showToast('Товар добавлен!', 'success')
+      showToast(editingProduct ? 'Товар обновлён!' : 'Товар добавлен!', 'success')
       setShowAddProduct(false)
+      setEditingProduct(null)
       setNewProduct({ name: '', price: '', description: '', image_url: '', internal_link: '' })
       fetchData()
     } else {
       showToast(t('errors.generic'), 'error')
     }
     setSavingProduct(false)
+  }
+
+  const openAdd = () => {
+    setEditingProduct(null)
+    setNewProduct({ name: '', price: '', description: '', image_url: '', internal_link: '' })
+    setShowAddProduct(true)
+  }
+
+  const openEdit = (p: Product) => {
+    setEditingProduct(p.id)
+    setNewProduct({ name: p.name, price: String(p.price), description: p.description || '', image_url: p.image_url || '', internal_link: p.internal_link || '' })
+    setShowAddProduct(true)
   }
 
   const pendingOrders = orders.filter((o) => o.status === 'PENDING')
@@ -214,7 +231,7 @@ export function ManagerView({ isEmbedded }: { isEmbedded?: boolean }) {
       ) : (
         <>
           {/* Add product button */}
-          <button className="btn-primary" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }} onClick={() => setShowAddProduct(true)}>
+          <button className="btn-primary" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }} onClick={openAdd}>
             <Plus size={18} /> {t('manager.add_product')}
           </button>
 
@@ -238,26 +255,35 @@ export function ManagerView({ isEmbedded }: { isEmbedded?: boolean }) {
                         </div>
                       )}
                     </div>
-                    <button
-                      className={p.is_active ? 'btn-danger' : 'btn-success'}
-                      style={{ padding: '8px 12px', fontSize: 12, fontFamily: 'inherit', flexShrink: 0 }}
-                      onClick={() => handleToggleProduct(p)}
-                    >
-                      {p.is_active ? t('manager.archive_product') : t('manager.activate_product')}
-                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                      <button
+                        className="btn-secondary"
+                        style={{ padding: '6px 12px', fontSize: 12, fontFamily: 'inherit' }}
+                        onClick={() => openEdit(p)}
+                      >
+                        ✏️ {t('common.edit')}
+                      </button>
+                      <button
+                        className={p.is_active ? 'btn-danger' : 'btn-success'}
+                        style={{ padding: '6px 12px', fontSize: 12, fontFamily: 'inherit' }}
+                        onClick={() => handleToggleProduct(p)}
+                      >
+                        {p.is_active ? t('manager.archive_product') : t('manager.activate_product')}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             )
           }
 
-          {/* Add Product Modal */}
+          {/* Add/Edit Product Modal */}
           {showAddProduct && (
             <div className="modal-overlay" onClick={() => setShowAddProduct(false)}>
               <div className="bottom-sheet" onClick={(e) => e.stopPropagation()}>
                 <div className="sheet-handle" />
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <h2 style={{ fontSize: 20, fontWeight: 700 }}>{t('manager.add_product')}</h2>
+                  <h2 style={{ fontSize: 20, fontWeight: 700 }}>{editingProduct ? 'Редактировать товар' : t('manager.add_product')}</h2>
                   <button onClick={() => setShowAddProduct(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={20} /></button>
                 </div>
                 {[

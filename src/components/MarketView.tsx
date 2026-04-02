@@ -219,7 +219,11 @@ export function MarketView() {
                       alt={product.name}
                       className="product-card-img"
                       style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }}
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      onError={(e) => { 
+                        const target = e.target as HTMLImageElement
+                        target.onerror = null // prevent infinite loops
+                        target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%25%22%20height%3D%22100%25%22%20viewBox%3D%220%200%20100%20100%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%231a1b26%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2250%22%20font-size%3D%2230%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3E%F0%9F%93%A6%3C%2Ftext%3E%3C%2Fsvg%3E'
+                      }}
                     />
                   ) : (
                     <div className="product-card-img" style={{ aspectRatio: '1/1', fontSize: 32 }}>
